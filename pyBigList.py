@@ -5,12 +5,14 @@ scriptPath = os.path.dirname(os.path.realpath(__file__))
 blockList = '%s\\biglist.p2p' % scriptPath if sys.platform == 'win32' else '%s/biglist.p2p' % scriptPath
 blockListGz = '%s\\biglist.p2p.gz' % scriptPath if sys.platform == 'win32' else '%s/biglist.p2p.gz' % scriptPath
 blockListUrl = 'http://john.bitsurge.net/public/biglist.p2p.gz'
-finalList = '/home/adam/Documents/biglist.p2p'
+finalList = os.path.expanduser('~/Documents/biglist.p2p') if sys.platform != 'win32' else '/dev/null'
 
 # remove old files
-if os.path.isfile(blockList): os.remove(blockList)
+if sys.platform == 'win32':
+    if os.path.isfile(blockList): os.remove(blockList)
+else:
+    if os.path.isfile(finalList): os.remove(finalList)
 if os.path.isfile(blockListGz): os.remove(blockListGz)
-if sys.platform != 'win32' and os.path.isfile(finalList): os.remove(finalList)
 
 # download the list
 print('Downloading the list. . .')
@@ -19,13 +21,8 @@ wget.download(blockListUrl, blockListGz)
 # decompress
 print('\nDecompressing biglist.p2p.gz. . .')
 with gzip.open(blockListGz, 'rb') as f_in:
-    with open(blockList, 'wb') as f_out:
+    with open(blockList if sys.platform == 'win32' else finalList, 'wb') as f_out:
         shutil.copyfileobj(f_in, f_out)
-
-# copy the file to ~/Documents (if on linux)
-if sys.platform != 'win32':
-    print('Copying blocklist.p2p to ~/Documents.')
-    shutil.copyfile(blockList, finalList)
 
 # remove the gz file
 print('Cleaning up. . .')
